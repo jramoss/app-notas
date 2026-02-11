@@ -1,0 +1,61 @@
+services:
+
+  db:
+    image: postgres:17
+    restart: always
+    # set shared memory limit when using docker compose
+    shm_size: 128mb
+    # or set shared memory limit when deploy via swarm stack
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 134217728 # 128*2^20 bytes = 128Mb
+      - db_data:/var/lib/postgresql/data
+
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: exampledb
+           
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+    environment:
+      ADMINER_DEFAULT_DB_DRIVER: pgsql
+      ADMINER_DEFAULT_DB_HOST: db
+      ADMINER_DEFAULT_DB_PORT: 5432
+      ADMINER_DEFAULT_DB_USERNAME: postgres
+      ADMINER_DEFAULT_DB_PASSWORD: postgres 
+      ADMINER_DEFAULT_DB_NAME: exampledb
+       
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3  
+networks:
+  default:
+    driver: bridge  
+    name: example_network
+    driver_opts:
+      com.docker.network.bridge.name: example_bridge 
+
+volumes:
+  db_data: 
+    driver: local
+    name: example_db_data
+    driver_opts:
+      type: none
+      device: ${PWD}/data/db
+      o: bind
+  
