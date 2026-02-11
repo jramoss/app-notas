@@ -14,12 +14,8 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<any> {
-    const salt = await bcrypt.genSalt(12);
-    const hash = await bcrypt.hash(createUserDto.password, salt);
-    const user = this.usersRepository.create({
-      ...createUserDto,
-      password: hash,
-    });
+    const user = this.usersRepository.create(createUserDto);
+    user.password = await bcrypt.hash(user.password, 10);
     console.log('Creating user:', user);
     return this.usersRepository.save(user);
   }
@@ -35,6 +31,9 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<any> {
+    if (updateUserDto.password) {
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
+    }
     const user = await this.usersRepository.preload({
       id,
       ...updateUserDto,
@@ -55,5 +54,9 @@ export class UsersService {
       return { message: 'User not found' };
     } 
     
+  }
+  async findOneByEmail(email: string): Promise<any> {
+    const user = await this.usersRepository.findOneBy({ email });
+    return user;
   }
 }

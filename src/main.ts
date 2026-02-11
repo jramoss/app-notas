@@ -15,7 +15,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Sistema Fiscal API')
     .setDescription('API para gerenciamento de documentos fiscais')
-    .setVersion('1.0')
+    .setVersion('1.0.2')
     .addBasicAuth({ type: 'http', scheme: 'basic' }, 'basic')
     .addSecurityRequirements('basic')
     .setContact('Suporte', 'https://lanjr.com.br/support', 'support@lanjr.com.br')
